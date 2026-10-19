@@ -76,7 +76,7 @@ export class AuthService {
   }
 
   // ─── 2. ĐĂNG XUẤT ───────────────────────────────────────────────────────────
-  async logout(_userId: number) {
+  async logout() {
     return {
       message: 'Đăng xuất thành công.',
       action: 'CLEAR_TOKEN',

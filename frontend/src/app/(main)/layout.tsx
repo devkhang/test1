@@ -13,8 +13,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const { translate } = useLocales();
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.replace('/login');
   };
 

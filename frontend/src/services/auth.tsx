@@ -21,8 +21,12 @@ export interface ApiResponse<T> {
 }
 
 const realAuthApi = {
-  login: (body: { username: string; password: string }) =>
-    api.post<ApiResponse<{ accessToken: string; user: User }>>('/auth/login', body).then((r) => r.data),
+  // Server set cookie httpOnly chứa token, body chỉ trả user
+  login: (body: { username: string; password: string; rememberMe: boolean }) =>
+    api.post<ApiResponse<{ user: User }>>('/auth/login', body).then((r) => r.data),
+
+  // Server xoá cookie
+  logout: () => api.post<ApiResponse<null>>('/auth/logout').then((r) => r.data),
 
   register: (body: RegisterBody) =>
     api.post<ApiResponse<null>>('/auth/register', body).then((r) => r.data),

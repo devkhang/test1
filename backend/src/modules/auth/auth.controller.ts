@@ -5,7 +5,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -24,6 +26,11 @@ import {
 import { Public } from '../../commons/decorators/public.decorator.js';
 import { CurrentUser } from '../../commons/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../commons/guards/jwt-auth.guard.js';
+import {
+  ACCESS_TOKEN_COOKIE,
+  accessTokenCookieOptions,
+  baseCookieOptions,
+} from './auth.cookie.js';
 
 @ApiTags('Auth – Xác thực')
 @Controller('auth')
@@ -36,17 +43,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Đăng nhập hệ thống',
-    description: 'Xác thực tài khoản và trả về JWT Bearer token cùng thông tin người dùng.',
+    description:
+      'Xác thực tài khoản, set JWT vào cookie httpOnly "accessToken" và trả về thông tin người dùng.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Đăng nhập thành công. Trả về accessToken và thông tin user.',
+    description: 'Đăng nhập thành công. Token nằm trong cookie, body chỉ có thông tin user.',
     schema: {
       example: {
         statusCode: 200,
         message: 'Thành công',
         data: {
-          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlSWQiOjF9...',
           expiresIn: '8h',
           user: {
             id: 1,
@@ -85,18 +92,23 @@ export class AuthController {
       },
     },
   })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, ...rest } = await this.authService.login(dto);
+    res.cookie(ACCESS_TOKEN_COOKIE, accessToken, accessTokenCookieOptions(dto.rememberMe));
+    return rest; // không trả token trong body nữa
   }
 
   // ─── 2. ĐĂNG XUẤT ─────────────────────────────────────────────────────────
-  @UseGuards(JwtAuthGuard)
+  // Public: token hết hạn/không hợp lệ vẫn phải xoá được cookie
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Đăng xuất',
-    description: 'Yêu cầu token JWT hợp lệ. Trả về action CLEAR_TOKEN để client xóa token.',
+    description: 'Xoá cookie accessToken. Không yêu cầu token hợp lệ.',
   })
   @ApiResponse({
     status: 200,
@@ -112,20 +124,10 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Chưa xác thực hoặc token không hợp lệ.',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Bạn cần đăng nhập để thực hiện thao tác này',
-        timestamp: '2026-10-18T16:00:00.000Z',
-        path: '/api/v1/auth/logout',
-      },
-    },
-  })
-  logout(@CurrentUser() user: { id: number }) {
-    return this.authService.logout(user.id);
+  logout(@Res({ passthrough: true }) res: Response) {
+    // Option phải khớp lúc set (path, sameSite, secure) thì trình duyệt mới xoá
+    res.clearCookie(ACCESS_TOKEN_COOKIE, baseCookieOptions());
+    return this.authService.logout();
   }
 
   // ─── 3. ĐỔI MẬT KHẨU (khi đã đăng nhập) ─────────────────────────────────
@@ -177,11 +179,15 @@ export class AuthController {
       },
     },
   })
-  changePassword(
+  async changePassword(
     @CurrentUser() user: { id: number },
     @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.changePassword(user.id, dto);
+    const result = await this.authService.changePassword(user.id, dto);
+    // Token cũ đã bị vô hiệu → xoá cookie luôn (FORCE_LOGOUT)
+    res.clearCookie(ACCESS_TOKEN_COOKIE, baseCookieOptions());
+    return result;
   }
 
   // ─── 4. QUÊN MẬT KHẨU – BƯỚC 1: Gửi OTP ──────────────────────────────────

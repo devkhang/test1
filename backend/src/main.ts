@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
@@ -9,7 +10,10 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api/v1');
 
-  // CORS
+  // Đọc cookie (req.cookies) – JWT được gửi qua cookie httpOnly
+  app.use(cookieParser());
+
+  // CORS – credentials: true để trình duyệt gửi kèm cookie; origin phải là domain cụ thể, không được '*'
   app.enableCors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
     credentials: true,

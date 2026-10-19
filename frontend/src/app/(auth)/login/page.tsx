@@ -27,9 +27,10 @@ export default function LoginPage() {
   const onSubmit = async ({ remember, ...body }: LoginForm) => {
     setAlert('');
     try {
-      const res = await authApi.login(body);
+      // remember gửi lên server: server quyết định cookie sống bao lâu
+      const res = await authApi.login({ ...body, rememberMe: remember });
       if (!res.success) return setAlert(translateError(res.code));
-      login(res.data.accessToken, res.data.user, remember);
+      login(res.data.user);
       enqueueSnackbar(translate('login.success'), { variant: 'success' });
       router.replace('/');
     } catch (err) {
