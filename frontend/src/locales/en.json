@@ -1,0 +1,53 @@
+{
+  "common": {
+    "submit": "Submit",
+    "logout": "Log out",
+    "language": "Language",
+    "required": "This field is required",
+    "unknownError": "Something went wrong, please try again",
+    "missingInfo": "Please fill in all required information",
+    "appName": "Occupational Safety and Health Database Management Software"
+  },
+  "login": {
+    "remember": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "title": "Log in",
+    "username": "Username",
+    "password": "Password",
+    "noAccount": "Don't have an account?",
+    "goSignup": "Sign up",
+    "success": "Logged in successfully"
+  },
+  "signup": {
+    "title": "Create account",
+    "email": "Email",
+    "companyName": "Organization name",
+    "taxCode": "Tax code",
+    "phone": "Phone number",
+    "invalidEmail": "Invalid email address",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordMin": "Password must be at least {{min}} characters",
+    "hasAccount": "Already have an account?",
+    "success": "Registration successful, please log in"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "oldPassword": "Current password",
+    "newPassword": "New password",
+    "sameAsOld": "New password must be different from the current password",
+    "success": "Password changed successfully"
+  },
+  "errors": {
+    "WRONG_PASSWORD": "Incorrect username or password",
+    "WRONG_OLD_PASSWORD": "Current password is incorrect",
+    "USERNAME_EXISTS": "Username already exists",
+    "EMAIL_EXISTS": "Email is already in use"
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "enterEmail": "Please enter your email",
+    "success": "Please check your email to reset your password",
+    "sendOtp": "Send verification code"
+  }
+}
